@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+# Authentication for LDAP users. Included from 10-auth.conf.
+#
+# <doc/wiki/AuthDatabase.LDAP.txt>
+
+passdb {
+  driver = ldap
+
+  # Path for LDAP configuration file, see example-config/dovecot-ldap.conf.ext
+  args = /etc/dovecot/dovecot-ldap.conf.ext
+}
+
+# "prefetch" user database means that the passdb already provided the
+# needed information and there's no need to do a separate userdb lookup.
+# <doc/wiki/UserDatabase.Prefetch.txt>
+#userdb {
+#  driver = prefetch
+#}
+
+# <doc/wiki/UserDatabase.Static.txt>
+userdb {
+  driver = static
+  args = uid=vmail gid=vmail home={{ mailsrv_mailboxes_dir }}/%d/%n allow_all_users=yes
+}

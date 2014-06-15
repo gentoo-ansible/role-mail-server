@@ -1,0 +1,33 @@
+---
+- name: postfix | install mail-mta/postfix
+  portage: package=mail-mta/postfix
+  tags: [packages, install]
+  # USE: mail-mta/postfix dovecot-sasl ldap
+
+- name: postfix | copy smtp_header_checks.pcre
+  copy: >
+    src=postfix/maps_smtp_header_checks.pcre
+    dest=/etc/postfix/smtp_header_checks.pcre
+    owner=root group=root mode=0644
+  when: mailsrv_header_privacy
+  tags: install
+
+- name: postfix | install configuration files
+  template: >
+    src=postfix/{{ item }}.j2
+    dest=/etc/postfix/{{ item }}
+    owner=root group=root mode=0644
+  with_items:
+    - main.cf
+    - master.cf
+    - ldap-virtual-mailbox-maps.cf
+    - ldap-virtual-alias-maps.cf
+  notify: restart postfix
+  tags: config
+
+- name: postfix | copy enhanced runscript
+  copy: >
+    src=postfix/postfix.rc
+    dest=/etc/init.d/postfix
+    owner=root group=root mode=0755
+  tags: config

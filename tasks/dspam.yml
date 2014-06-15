@@ -1,0 +1,107 @@
+---
+- name: dspam | install dspam and dovecot-antispam
+  portage: package={{ item }}
+  with_items:
+    - mail-filter/dspam
+    - mail-filter/dovecot-antispam
+  tags: [packages, install]
+  # USE: mail-filter/dspam (clamav) postgres syslog virtual-users -hash
+
+- name: dspam | fix /usr/bin/dspam permissions
+  file: >
+    path=/usr/bin/dspam
+    owner=root group=dspam mode=2511
+  tags: install
+
+- name: dspam | prepare directories
+  file: >
+    state=directory
+    path={{ item }}
+    owner=root group=dspam mode=0770
+  with_items:
+    - "{{ mailsrv_dspam_dir }}"
+    - /etc/dspam/conf.d
+  tags: install
+
+- name: dspam | install configs to /etc/dspam
+  template: >
+    src=dspam/{{ item }}.j2
+    dest=/etc/dspam/{{ item }}
+    owner=root group=dspam mode=0640
+  with_items:
+    - default.prefs
+    - dspam.conf
+  tags: config
+
+- name: dspam | install configs to /etc/dspam/conf.d
+  template: >
+    src=dspam/conf.d/{{ item }}.j2
+    dest=/etc/dspam/conf.d/{{ item }}
+    owner=root group=dspam mode=0640
+  with_items:
+    - pgsql_drv.conf
+  tags: config
+
+- name: dspam | configure shared group
+  copy: >
+    content=dspam:shared:*\\n
+    dest={{ mailsrv_dspam_dir }}/group
+    owner=root group=root mode=0644
+  tags: config
+
+- name: dspam | copy postfix filter configuration
+  copy: >
+    src=dspam/dspam_filter_access
+    dest=/etc/postfix/dspam_filter_access
+    owner=root group=root mode=0644
+  notify: restart postfix
+  tags: config
+
+- name: dspam | copy spam-folder.sieve script for dovecot
+  copy: >
+    src=dspam/spam-folder.sieve
+    dest={{ mailsrv_mailboxes_dir }}/spam-folder.sieve
+    owner=root group=root mode=0644
+  tags: config
+
+- name: dspam | create database user
+  delegate_to: "{{ mailsrv_dspam_db_delegate_to }}"
+  sudo_user: postgres
+  postgresql_user: >
+    name={{ mailsrv_dspam_db_username }}
+    password="{{ mailsrv_dspam_db_password }}"
+  tags: [accounts, databases]
+
+- name: dspam | create database
+  delegate_to: "{{ mailsrv_dspam_db_delegate_to }}"
+  sudo_user: postgres
+  postgresql_db: >
+    name={{ mailsrv_dspam_db_database }}
+    owner={{ mailsrv_dspam_db_username }}
+  register: createdb_result
+  tags: databases
+
+- name: dspam | install PL/pgSQL language for dspam database
+  delegate_to: "{{ mailsrv_dspam_db_delegate_to }}"
+  sudo_user: postgres
+  command: "createlang plpgsql {{ mailsrv_dspam_db_database }}"
+  register: result
+  failed_when: result.rc != 0 and result.stderr.find('is already installed in database') == -1
+  changed_when: result.stderr.find('is already installed in database') == -1
+  when: createdb_result | changed
+  tags: databases
+
+- name: dspam | initialize database
+  shell: >
+    PGPASSWORD='{{ mailsrv_dspam_db_password }}'
+    psql -h {{ mailsrv_dspam_db_host }}
+    -p {{ mailsrv_dspam_db_port }}
+    -U {{ mailsrv_dspam_db_username }}
+    -d {{ mailsrv_dspam_db_database }}
+    -f {{ item }}
+    --set ON_ERROR_STOP=1
+  with_items:
+    - /usr/share/dspam/pgsql/pgsql_objects.sql
+    - /usr/share/dspam/pgsql/virtual_users.sql
+  when: createdb_result | changed
+  tags: databases

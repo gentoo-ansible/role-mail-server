@@ -1,0 +1,21 @@
+---
+- name: clamav | install app-antivirus/clamav
+  portage: package=app-antivirus/clamav
+  tags: [packages, install]
+
+- name: clamav | install config files
+  template: >
+    src=clamav/{{ item }}.j2
+    dest=/etc/{{ item }}
+    owner=root group=root mode=0644
+  with_items:
+    - clamd.conf
+    - freshclam.conf
+  notify: restart clamd
+  tags: config
+
+- name: clamav | populate virus database files for the first time
+  command: >
+    freshclam --user=clamav --config-file=/etc/freshclam.conf
+    creates={{ mailsrv_clamav_database_dir }}/main.cvd
+  tags: initialize

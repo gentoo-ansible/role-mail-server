@@ -1,0 +1,77 @@
+---
+- name: dovecot | install net-mail/dovecot
+  portage: package=net-mail/dovecot
+  tags: [packages, install]
+  # USE: net-mail/dovecot imapc ldap managesieve sieve (solr)
+
+- name: dovecot | create group vmail
+  group: >
+    name=vmail
+    system=yes
+  tags: [accounts, install]
+
+- name: dovecot | create user vmail
+  user: >
+    name=vmail
+    group=vmail
+    system=yes
+    shell=/sbin/nologin
+    home={{ mailsrv_mailboxes_dir }}
+    createhome=no
+  tags: [accounts, install]
+
+- name: dovecot | prepare mailbox directories for domains
+  file: >
+    state=directory
+    path={{ mailsrv_mailboxes_dir }}/{{ item }}
+    recurse=yes
+    owner=vmail group=vmail mode=0770
+  with_items: mailsrv_virtual_domains
+  tags: install
+
+- name: dovecot | install configs to /etc/dovecot/
+  template: >
+    src=dovecot/{{ item.name }}.j2
+    dest=/etc/dovecot/{{ item.name }}
+    owner=root group=root mode={{ item.mode }}
+  with_items:
+    - { name: dovecot.conf, mode: '0644' }
+    - { name: dovecot-ldap.conf.ext, mode: '0600' }
+  notify: restart dovecot
+  tags: config
+
+- name: dovecot | install configs to /etc/dovecot/conf.d/
+  template: >
+    src={{ item }}
+    dest=/etc/dovecot/conf.d/{{ item | basename | replace('.j2', '') }}
+  with_fileglob:
+    - ../templates/dovecot/conf.d/*
+  register: confd_managed
+  notify: restart dovecot
+  tags: config
+
+- name: dovecot | remove unused configs in /etc/dovecot/
+  file: >
+    path=/etc/dovecot/{{ item }}
+    state=absent
+  with_items:
+    - dovecot-dict-auth.conf.ext
+    - dovecot-dict-sql.conf.ext
+    - dovecot-sql.conf.ext
+  tags: cleanup
+
+- name: dovecot | list files in /etc/dovecot/conf.d/
+  shell: ls -1 /etc/dovecot/conf.d
+  register: confd_contents
+  changed_when: false
+  tags: cleanup
+
+- name: dovecot | remove all unmanaged configs in /etc/dovecot/conf.d/
+  file: >
+    path=/etc/dovecot/conf.d/{{ item }}
+    state=absent
+  with_items: confd_contents.stdout_lines
+  # changed items has attribute dest, but not path and unchanged exact opposite :(
+  when: item not in ((confd_managed.results|selectattr('dest', 'defined')|map(attribute='dest')|list +
+    confd_managed.results|selectattr('path', 'defined')|map(attribute='path')|list) | map('basename'))
+  tags: cleanup

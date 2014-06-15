@@ -1,0 +1,120 @@
+---
+#
+# Postfix & Dovecot
+#
+
+# Location of the Postfix top-level queue directory. This is also the root
+# directory of Postfix daemon processes that run chrooted.
+mailsrv_postfix_queue_dir: /var/spool/postfix
+
+# Directory path for Dovecot to store mailboxes.
+mailsrv_mailboxes_dir: /var/lib/dovecot
+
+# Whether to run SMTP servers and Submission in chroot jail.
+mailsrv_postfix_chroot_enabled: true
+
+# Whether to enable Mail Submission Agent.
+mailsrv_submission_enabled: false
+
+# Hostname of this mail system; should be a fully-qualified domain name.
+mailsrv_domain: "{{ ansible_fqdn }}"
+
+# List of virtual mail domains.
+mailsrv_virtual_domains: []
+
+# List of "trusted" remote SMTP clients (IP addresses) that have more
+# privileges than "strangers". In particular, "trusted" SMTP clients are
+# allowed to relay mail through Postfix.
+mailsrv_friendly_networks: []
+
+# The default host to send mail to when no entry is matched in the optional
+# transport table. Specify a domain name, hostname, hostname:port,
+# [hostname]:port, [hostaddress] or [hostaddress]:port. The form [hostname]
+# turns off MX lookups.
+mailsrv_relay_host: ''
+
+# Whether to remove local client IP from headers of outbound mails.
+mailsrv_header_privacy: true
+
+# Maximal size of a received message, including envelope information (in megabytes).
+mailsrv_message_size_limit: 100
+
+# Path of the SSL certificate for SMTP and IMAP server.
+mailsrv_ssl_cert_path: /etc/ssl/postfix/server.crt
+
+# Path of the SSL key for SMTP and IMAP server.
+mailsrv_ssl_key_path: /etc/ssl/postfix/server.key
+
+# URI(s) of LDAP server(s) where are users and aliases stored.
+mailsrv_ldap_uri: ldap://127.0.0.1:389
+
+# LDAP base distinguished name (DN) where to search for users and mail aliases.
+mailsrv_ldap_people_dn:
+
+#
+# OpenDKIM
+#
+
+# Whether to install and configure OpenDKIM.
+mailsrv_dkim_enabled: true
+
+#
+# DSPAM
+#
+
+# Whether to install and configure DSPAM.
+mailsrv_dspam_enabled: true
+
+# Base directory of the DSPAM storage.
+mailsrv_dspam_dir: /var/spool/dspam
+
+# Training mode to use.
+#   - toe      Train on Error (Only).
+#   - teft     Train Everything (Trains on every message).
+#   - tum      Train Until Mature (Train only tokens without enough data).
+#   - notrain  Do not train or store signatures (large ISP systems, post-train).
+mailsrv_dspam_training_mode: teft
+
+# Statistical sedation: 0-10
+mailsrv_dspam_statistical_sedation: 1
+
+# Path of the PostgreSQL unix socket. If empty, then TCP/IP port specified with
+# {{mailsrv_dspam_db_host}} and {{mailsrv_dspam_db_port}} is used instead.
+mailsrv_dspam_db_socket: /run/postgresql/.s.PGSQL.5432
+
+# Domain or IP address of PostgreSQL instance. Used only when
+# {{mailsrv_dspam_db_socket}} is empty.
+mailsrv_dspam_db_host: localhost
+
+# Port number of PostgreSQL instance. Used only when
+# {{mailsrv_dspam_db_socket}} is empty.
+mailsrv_dspam_db_port: 5432
+
+# Name of the DSPAM database.
+mailsrv_dspam_db_database: dspam
+
+# Name of the DSPAM database user.
+mailsrv_dspam_db_username: "{{ mailsrv_dspam_db_database }}"
+
+# Password of the DSPAM database user.
+mailsrv_dspam_db_password: changeme
+
+# Should not be changed.
+mailsrv_dspam_db_delegate_to: "{{ mailsrv_dspam_db_host | replace('localhost', inventory_hostname) | replace('127.0.0.1', inventory_hostname) }}"
+
+#
+# ClamAV
+#
+
+# Whether to install and configure ClamAV antivirus to scan e-mailes.
+mailsrv_clamav_enabled: true
+
+# Path to the ClamAV database directory.
+mailsrv_clamav_database_dir: /var/lib/clamav
+
+# TCP port number the ClamAV daemon will listen on.
+mailsrv_clamav_port: 3310
+
+# Your country code to select the nearest database mirror.
+# See http://www.iana.org/cctld/cctld-whois.htm for the full list.
+mailsrv_clamav_country_code: ''

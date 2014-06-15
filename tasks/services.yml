@@ -1,0 +1,14 @@
+---
+- name: enable and start opendkim
+  service: name=opendkim enabled=yes state=started
+  when: mailsrv_dkim_enabled
+
+- name: enable and start postfix
+  service: name=postfix enabled=yes state=started
+
+- name: enable and start dovecot
+  service: name=dovecot enabled=yes state=started
+
+- name: enable and start clamav
+  service: name=clamd enabled=yes state=started
+  when: mailsrv_clamav_enabled

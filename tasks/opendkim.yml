@@ -1,0 +1,50 @@
+---
+- name: opendkim | install mail-filter/opendkim
+  portage: package=mail-filter/opendkim
+  tags: [packages, install]
+
+- name: opendkim | create keys directories
+  file: >
+    state=directory
+    path=/etc/opendkim/keys/{{ item }}
+    group=milter owner=milter mode=0700
+  with_items: mailsrv_virtual_domains
+  tags: install
+
+- name: opendkim | install configuration files
+  template: >
+    src=opendkim/{{ item }}.j2
+    dest=/etc/opendkim/{{ item }}
+    owner=milter group=milter mode=0600
+  with_items:
+    - opendkim.conf
+    - KeyTable
+    - SigningTable
+    - TrustedHosts
+  notify:
+    - restart opendkim
+  tags: config
+
+  # needed for Postfix to use opendkim socket
+- name: opendkim | add postfix to group milter
+  user: >
+    name=milter
+    groups=postfix
+    append=yes
+  tags: [accounts, config]
+
+- name: opendkim | generate keys
+  command: >
+    opendkim-genkey -r -a --domain={{ item }} --directory=/etc/opendkim/keys/{{ item }}/ --selector=mail
+    creates=/etc/opendkim/keys/{{ item }}/mail.private
+  with_items: mailsrv_virtual_domains
+  notify: restart opendkim
+  tags: [keys, config]
+
+- name: opendkim | fix permissions in keys directory
+  file: >
+    state=directory
+    path=/etc/opendkim/keys
+    recurse=yes
+    group=milter owner=milter
+  tags: [keys, config]

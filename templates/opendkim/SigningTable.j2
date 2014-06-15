@@ -1,0 +1,3 @@
+{% for domain in mailsrv_virtual_domains %}
+*@{{ domain }} mail._domainkey.{{ domain }}
+{% endfor %}

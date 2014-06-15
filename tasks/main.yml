@@ -1,0 +1,17 @@
+---
+- include: postfix.yml tags=postfix
+
+- include: dovecot.yml tags=dovecot
+
+- include: opendkim.yml tags=opendkim
+  when: mailsrv_dkim_enabled
+
+- include: dspam.yml tags=dspam
+  when: mailsrv_dspam_enabled
+
+- include: clamav.yml tags=clamav
+  when: mailsrv_clamav_enabled
+
+- include: dns_checks.yml tags=check
+
+- include: services.yml tags=services

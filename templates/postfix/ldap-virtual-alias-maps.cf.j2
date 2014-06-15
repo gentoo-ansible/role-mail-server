@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# If lookup doesn't work, try to use IP address here.
+server_host = {{ mailsrv_ldap_uri if mailsrv_ldap_uri is string else mailsrv_ldap_uri | join(' ') }}
+version = 3
+search_base = {{ mailsrv_ldap_people_dn | mandatory }}
+query_filter = (&(objectClass=mailUser)(mail=%s))
+scope = sub
+result_attribute = maildrop
+bind = no

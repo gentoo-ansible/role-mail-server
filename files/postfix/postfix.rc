@@ -1,0 +1,125 @@
+#!/sbin/runscript
+# Copyright 1999-2014 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+extra_started_commands="reload abort flush"
+
+description_reload="Re-read configuration files. Running processes terminate at their earliest convenience."
+description_abort="Stop the Postfix mail system abruptly. Running processes are signaled to stop immediately."
+description_flush="Force delivery: attempt to deliver every message in the deferred mail queue."
+
+# Please read http://www.postfix.org/MULTI_INSTANCE_README.html for multi instance support
+CONF_DIR="/etc/postfix"
+CONF_OPT="${SVCNAME##*.}"
+if [ -n ${CONF_OPT} -a ${SVCNAME} != "postfix" ]; then
+	CONF_DIR="${CONF_DIR}.${CONF_OPT}"
+fi
+if [ "${CONF_DIR}" = "/etc/postfix" ]; then
+	CONF_PARAM=""
+	CONF_MESSAGE=""
+else
+	CONF_PARAM="-c ${CONF_DIR}"
+	CONF_MESSAGE="(${CONF_DIR})"
+fi
+
+depend() {
+	use logger dns ypbind amavisd antivirus postfix_greylist net saslauthd
+	if [ "${SVCNAME}" = "postfix" ]; then
+		provide mta
+	fi
+}
+
+start_pre() {
+	if [ ! -z "${CONF_PARAM}" ]; then
+		einfo "Please consider updating your config for postmulti support."
+	fi
+	if [ ! -d "${CONF_DIR}" ]; then
+		eend 1 "${CONF_DIR} does not exist"
+		return 1
+	fi
+
+	# see if we need to prepare chroot environment
+	local need_chroot=$(awk '/^[0-9a-z]/ && ($5 ~ "[-yY]") { print "y"; exit }' ${CONF_DIR}/master.cf)
+	if [ -n "${need_chroot}" ]; then
+		prepare_chroot
+	fi
+	# (re)create aliases
+	/usr/bin/newaliases &>/dev/null
+}
+
+start() {
+	ebegin "Starting postfix ${CONF_MESSAGE}"
+	/usr/sbin/postfix ${CONF_PARAM} start &>/dev/null
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping postfix ${CONF_MESSAGE}"
+	/usr/sbin/postfix ${CONF_PARAM} stop &>/dev/null
+	eend
+}
+
+status() {
+	einfon ""
+	/usr/sbin/postfix ${CONF_PARAM} status
+	if [ $? = 0 ]; then
+		mark_service_started "${SVCNAME}"
+		eend 0
+	else
+		mark_service_stopped "${SVCNAME}"
+		eend 3
+	fi
+}
+
+reload() {
+	ebegin "Reloading postfix ${CONF_MESSAGE}"
+	/usr/sbin/postfix ${CONF_PARAM} reload &>/dev/null
+	eend $?
+}
+
+abort() {
+	ebegin "Aborting postfix ${CONF_MESSAGE}"
+
+	if service_started "${SVCNAME}"; then
+		mark_service_stopped "${SVCNAME}"
+	fi
+	/usr/sbin/postfix ${CONF_PARAM} abort &>/dev/null
+	eend $?
+}
+
+flush() {
+	ebegin "Flushing postfix ${CONF_MESSAGE}"
+	/usr/sbin/postfix ${CONF_PARAM} flush &>/dev/null
+	eend $?
+}
+
+prepare_chroot() {
+	oldumask=$(umask)
+	umask 022
+	cd $(postconf -h queue_directory)
+
+	# copy required config files from /etc
+	mkdir -p etc
+	local file; for file in hosts localtime nsswitch.conf resolv.conf services; do
+		cp /etc/${file} etc/${file}
+	done
+
+	# copy root CA certificates
+	mkdir -p etc/ssl/certs
+	cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
+
+	# if we're using unix:passwd.byname, then we need to copy etc/passwd.
+	local local_maps=$(postconf -h local_recipient_maps)
+	if [[ "${local_maps}" =~ "unix:passwd.byname" ]]; then
+		sed 's/^\([^:]*\):[^:]*/\1:x/' /etc/passwd > etc/passwd
+		chmod a+r etc/passwd
+	fi
+
+	# copy required libs
+	mkdir -p lib
+	ln -sf lib lib64
+	rm lib/libnss_*so*
+	cp -a /lib/libnss_*so* lib/
+
+	umask $oldumask
+}

@@ -1,0 +1,251 @@
+# {{ ansible_managed }}
+#
+# Global Postfix configuration file. This file lists only a subset of all
+# parameters. For the syntax, and for a complete parameter list, see the
+# postconf(5) manual page (command: "man 5 postconf"), or
+# /usr/share/doc/postfix-*/main.cf.default.bz2 for a commented example.
+#
+
+# The location of the Postfix top-level queue directory. This is the root
+# directory of Postfix daemon processes that run chrooted.
+queue_directory = {{ mailsrv_postfix_queue_dir }}
+
+# The internet hostname of this mail system. The default is to use the
+# fully-qualified domain name (FQDN) from gethostname(), or to use the non-FQDN
+# result from gethostname() and append ".$mydomain".
+myhostname = {{ mailsrv_domain | mandatory }}
+
+# The internet domain name of this mail system. The default is to use
+# $myhostname minus the first component, or "localdomain".
+#mydomain =
+
+# With locally submitted mail, append the string ".$mydomain" to addresses that
+# have no ".domain" information. With remotely submitted mail, append the
+# string ".$remote_header_rewrite_domain" instead.
+#
+# Appending .domain is the MUA's job, so disable it.
+append_dot_mydomain = no
+
+# The domain name that locally-posted mail appears to come from, and that
+# locally posted mail is delivered to. The default, $myhostname, is adequate
+# for small sites. If you run a domain with multiple machines, you should (1)
+# change this to $mydomain and (2) set up a domain-wide alias database that
+# aliases each user to user@that.users.mailhost.
+myorigin = $mydomain
+
+# The network interface addresses that this mail system receives mail on.
+# Specify "all" to receive mail on all network interfaces (default), and
+# "loopback-only" to receive mail on loopback network interfaces only. The
+# parameter also controls delivery of mail to user@[ip.address].
+inet_interfaces = all
+
+# The list of domains that this machine considers itself the final destination
+# for. Do not specify the names of virtual domains - those domains are
+# specified elsewhere (see VIRTUAL_README).
+# These are the domains we handle root mail and such for.
+mydestination = localhost 127.0.0.1 [::1]
+
+# The list of "trusted" remote SMTP clients that have more privileges than
+# "strangers". In particular, "trusted" SMTP clients are allowed to relay mail
+# through Postfix.
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 {{ mailsrv_friendly_networks | join(' ') }}
+
+# The default host to send mail to when no entry is matched in the optional
+# transport table. When no relayhost is given, mail is routed directly to the
+# destination.
+relayhost = {{ mailsrv_relay_host }}
+
+# The list of alias databases used by the local delivery agent. If you change
+# the alias database, run "newaliases" to build the necessary DBM or DB file.
+alias_maps = hash:/etc/mail/aliases
+
+# The list of alias databases used by the local delivery agent that are updated
+# with "newaliases".
+alias_database = hash:/etc/mail/aliases
+
+# The separator between user names and address extensions (user+foo).
+recipient_delimiter = +
+
+# The time after which the sender receives a copy of the message headers of
+# mail that is still queued. Time units: s (seconds), m (minutes), h (hours),
+# d (days), w (weeks). The default time unit is h (hours).
+#
+# Uncomment the next line to generate "delayed mail" warnings.
+delay_warning_time = 30m
+
+# The maximal size of any local individual mailbox or maildir file, or zero
+# (no limit).
+mailbox_size_limit = 0
+
+# The maximal size in megabytes of a message, including envelope information.
+message_size_limit = {{ mailsrv_message_size_limit * 1048576 }}
+
+# Whether or not to use the local biff service. This service sends "new mail"
+# notifications to users who have requested new mail notification with the UNIX
+# command "biff y".
+biff = no
+
+# The location of Postfix README files.
+readme_directory = no
+
+{% if mailsrv_dspam_enabled %}
+# Pass one mail at a time to dspam.
+dspam_destination_recipient_limit = 1
+
+{% endif %}
+#
+# SMTP client
+#
+
+# Use TLS if supported by the remote SMTP server, otherwise use plaintext.
+smtp_tls_security_level = may
+
+# A file containing certificates of trusted root CAs.
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+
+# Log only a summary message on TLS handshake completion.
+smtp_tls_loglevel = 1
+
+{% if mailsrv_header_privacy %}
+# Remove local client IP from headers.
+smtp_header_checks = pcre:/etc/postfix/smtp_header_checks.pcre
+
+{% endif %}
+
+#
+# SMTP server
+#
+
+# Announce STARTTLS support to remote SMTP clients, but do not require that
+# clients use TLS encryption.
+smtpd_tls_security_level = may
+
+# Do not announce or accept SASL authentication over unencrypted connections.
+smtpd_tls_auth_only = yes
+
+# File with the RSA certificate and key in PEM format to use for TLS.
+smtpd_tls_cert_file = {{ mailsrv_ssl_cert_path }}
+smtpd_tls_key_file = {{ mailsrv_ssl_key_path }}
+
+# Add "Received:" message headers with info about the protocol and cipher used.
+smtpd_tls_received_header = yes
+
+# Enable SASL authentication in the clients.
+smtpd_sasl_auth_enable = yes
+
+# The SASL plug-in type that the Postfix SMTP server should use for
+# authentication.
+smtpd_sasl_type = dovecot
+
+# Location of the Dovecot authentication agent.
+smtpd_sasl_path = private/auth
+
+#
+# Restrictions
+#
+
+smtpd_helo_required = yes
+disable_vrfy_command = yes
+strict_rfc821_envelopes = yes
+
+smtpd_relay_restrictions =
+    # permit requests from trusted networks
+    permit_mynetworks,
+    # reject when the RCPT TO address is not in fully-qualified domain form
+    reject_non_fqdn_recipient,
+    # permit requests from authenticated users
+    permit_sasl_authenticated,
+    # reject when we're not the final destination or forwarder for
+    reject_unauth_destination
+
+smtpd_recipient_restrictions =
+    # permit requests from trusted networks
+    permit_mynetworks,
+    # permit requests from authenticated users
+    permit_sasl_authenticated,
+    # reject when the client sends SMTP commands ahead of time where it is not
+    # allowed, or without knowing that we actually supports pipelining
+    reject_unauth_pipelining,
+    # reject when the HELO/EHLO hostname is malformed
+    reject_invalid_helo_hostname,
+    # reject when the HELO/EHLO hostname is not in fully-qualified domain or
+    # address literal form
+    reject_non_fqdn_helo_hostname,
+    # reject when the MAIL FROM address is not in fully-qualified domain form
+    reject_non_fqdn_sender,
+    # reject when the MAIL FROM address has no DNS MX and A record,
+    # or a malformed MX record
+    reject_unknown_sender_domain,
+    # reject when the RCPT TO address has no DNS MX and A record, or a
+    # malformed MX record
+    reject_unknown_recipient_domain,
+    # reject when the client IP address has no address->name mapping
+    reject_unknown_reverse_client_hostname,
+{% if mailsrv_dspam_enabled %}
+    # filter the mail through DSPAM
+    check_recipient_access pcre:/etc/postfix/dspam_filter_access
+{% endif %}
+    # reject when the HELO/EHLO hostname has no DNS A or MX record
+    # many servers are misconfigured so this can reject even valid e-mails!
+    #reject_unknown_helo_hostname
+
+# Redefine SMTP return codes
+invalid_hostname_reject_code = 554
+multi_recipient_bounce_reject_code = 554
+non_fqdn_reject_code = 554
+unknown_address_reject_code = 554
+unknown_client_reject_code = 554
+unknown_hostname_reject_code = 554
+unknown_local_recipient_reject_code = 554
+unknown_relay_recipient_reject_code = 554
+unknown_virtual_alias_reject_code = 554
+unknown_virtual_mailbox_reject_code = 554
+unverified_recipient_reject_code = 554
+unverified_sender_reject_code = 554
+
+postscreen_dnsbl_sites =
+    sbl-xbl.spamhaus.org*2
+    cbl.abuseat.org*2
+    bl.spamcop.net*2
+    dnsbl.sorbs.net*1
+    spam.spamrats.com*2
+postscreen_dnsbl_threshold = 3
+postscreen_dnsbl_action = enforce
+postscreen_greet_action = enforce
+
+#
+# Virtual / Dovecot LDA
+#
+
+# Enable use of Dovecot LDA specified in master.cf for virtual_mailbox_domains.
+virtual_transport = dovecot
+
+# To get the "Delivered-To:" header we need to use flags=D and set this entry.
+dovecot_destination_recipient_limit = 1
+
+# Postfix is final destination for the specified list of domains; mail is
+# delivered via the $virtual_transport mail delivery transport.
+virtual_mailbox_domains = {{ mailsrv_virtual_domains | join(' ') }}
+
+# Lookup tables with all valid addresses in the domains that match
+# $virtual_mailbox_domains.
+virtual_mailbox_maps = ldap:/etc/postfix/ldap-virtual-mailbox-maps.cf
+
+# Postfix is final destination for the specified list of virtual alias domains.
+virtual_alias_maps = ldap:/etc/postfix/ldap-virtual-alias-maps.cf
+
+# Lookup tables with all names or addresses of local recipients.
+local_recipient_maps = $virtual_mailbox_maps
+
+{% if mailsrv_dkim_enabled %}
+#
+# OpenDKIM
+#
+{% if mailsrv_postfix_chroot_enabled %}
+smtpd_milters = unix:opendkim/opendkim.sock
+{% else %}
+smtpd_milters = unix:/run/opendkim/opendkim.sock
+{% endif %}
+non_smtpd_milters = $smtpd_milters
+milter_default_action = accept
+{% endif %}

@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+# Configuration of PostgreSQL driver for DSPAM.
+
+# For PgSQLServer you can Use a TCP/IP address or a socket. If your socket is
+# in /run/postgresql/.s.PGSQL.5432 specify just the path where the socket
+# resits (without .s.PGSQL.5432).
+
+{% if mailsrv_dspam_db_socket %}
+PgSQLServer		{{ mailsrv_dspam_db_socket | dirname }}
+{% else %}
+PgSQLServer		{{ mailsrv_dspam_db_host }}
+PgSQLPort		{{ mailsrv_dspam_db_port }}
+{% endif %}
+PgSQLUser		{{ mailsrv_dspam_db_username }}
+PgSQLPass		{{ mailsrv_dspam_db_password }}
+PgSQLDb			{{ mailsrv_dspam_db_database }}
+
+# If you're running DSPAM in client/server (daemon) mode, uncomment the
+# setting below to override the default connection cache size (the number
+# of connections the server pools between all clients).
+#
+#PgSQLConnectionCache	3
+
+# UIDInSignature: PgSQL supports the insertion of the user id into the DSPAM
+# signature. This allows you to create one single spam or fp alias
+# (pointing to some arbitrary user), and the uid in the signature will
+# switch to the correct user. Result: you need only one spam alias
+
+#PgSQLUIDInSignature	on
+
+# If you're using vpopmail or some other type of virtual setup and wish to
+# change the table dspam uses to perform username/uid lookups, you can over-
+# ride it below
+
+#PgSQLVirtualTable			dspam_virtual_uids
+#PgSQLVirtualUIDField		uid
+#PgSQLVirtualUsernameField	username

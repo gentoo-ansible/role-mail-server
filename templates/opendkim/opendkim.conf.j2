@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+# Configuration file for OpenDKIM filter
+
+Canonicalization	relaxed/relaxed
+ExternalIgnoreList	refile:/etc/opendkim/TrustedHosts
+InternalHosts		refile:/etc/opendkim/TrustedHosts
+KeyTable			refile:/etc/opendkim/KeyTable
+SigningTable		refile:/etc/opendkim/SigningTable
+UMask				0117
+UserID				milter:milter
+{% if mailsrv_postfix_chroot_enabled %}
+Socket				local:{{ mailsrv_postfix_queue_dir }}/opendkim/opendkim.sock
+PidFile				{{ mailsrv_postfix_queue_dir }}/opendkim/opendkim.pid
+{% else %}
+Socket				local:/run/opendkim/opendkim.sock
+PidFile				/run/opendkim/opendkim.pid
+{% endif %}
+TemporaryDirectory	/var/tmp
+MinimumKeyBits		1024
+Mode				sv
+LogWhy				Yes
+Syslog				Yes
+SyslogSuccess		Yes

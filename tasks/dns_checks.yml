@@ -1,0 +1,47 @@
+---
+- name: dig MX records
+  sudo: no
+  local_action: command dig {{ item }} mx +short
+  register: mx_records
+  changed_when: false
+  with_items: mailsrv_virtual_domains
+
+- name: check MX records in DNS
+  pause: >
+    prompt="You should add MX record to DNS for {{ item.0 }}:
+
+      {{ item.0 }}. IN MX 10 {{ mailsrv_domain }}.
+
+    Press Enter to continue"
+  when: not item.1 or item.1.split()[-1] != mailsrv_domain + '.'
+  with_together:
+    - mailsrv_virtual_domains
+    - mx_records.results | map(attribute='stdout') | list
+
+- name: check SPF records in DNS
+  pause: >
+    prompt="You should add SPF record to DNS for {{ item }}:
+
+        {{ item }}. IN TXT v=spf1 mx -all
+
+    Press Enter to continue"
+  when: "not 'v=spf1 ' in (lookup('dnstxt', item) or '')"
+  with_items: mailsrv_virtual_domains
+
+- name: grep DKIM public keys
+  command: >
+    sed -En 'N;s/^(\S+).*p=([^;" ]+).*/\1 \2/p' /etc/opendkim/keys/{{ item }}/mail.txt
+  register: dkim_keys
+  changed_when: false
+  with_items: mailsrv_virtual_domains
+  when: mailsrv_dkim_enabled
+
+- name: check DKIM records in DNS
+  pause: >
+    prompt="DKIM record for {{ item.split()[0] }} is either not set or incorrect. Add the following record to your DNS:
+
+        {{ item.split()[0] }} IN TXT v=DKIM1; k=rsa; p={{ item.split()[1] }}
+
+    Press Enter to continue"
+  with_items: dkim_keys.results | map(attribute='stdout') | list
+  when: mailsrv_dkim_enabled and not item.split()[1] in lookup('dnstxt', item.split()[0])
