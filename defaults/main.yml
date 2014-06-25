@@ -51,6 +51,9 @@ mailsrv_ldap_uri: ldap://127.0.0.1:389
 # LDAP base distinguished name (DN) where to search for users and mail aliases.
 mailsrv_ldap_people_dn:
 
+# Port number the managesieve will listen on; 0 to disable.
+mailsrv_managesieve_port: 4190
+
 #
 # OpenDKIM
 #
