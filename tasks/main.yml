@@ -12,6 +12,8 @@
 - include: clamav.yml tags=clamav
   when: mailsrv_clamav_enabled
 
-- include: dns_checks.yml tags=check
-
 - include: services.yml tags=services
+
+- include: check.yml tags=check
+
+- include: check_dns.yml tags=check-dns,check,dns

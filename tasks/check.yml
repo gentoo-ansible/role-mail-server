@@ -1,0 +1,24 @@
+---
+- name: ensure that SMTP, SMTPS and IMAPS ports are open
+  wait_for: >
+    port={{ item }}
+    timeout=10
+  with_items: [25, 465, 993]
+
+- name: ensure that managesieve port is open
+  wait_for: >
+    port={{ mailsrv_managesieve_port }}
+    timeout=10
+  when: mailsrv_managesieve_port > 0
+
+- name: ensure that OpenDKIM socket exists
+  wait_for: >
+    path={{ mailsrv_postfix_queue_dir if mailsrv_postfix_chroot_enabled else '/run'}}/opendkim/opendkim.sock
+    timeout=10
+  when: mailsrv_dkim_enabled
+
+- name: ensure that ClamAV port is open
+  wait_for: >
+    port={{ mailsrv_clamav_port }}
+    timeout=10
+  when: mailsrv_clamav_enabled
