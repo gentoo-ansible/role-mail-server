@@ -107,6 +107,11 @@ ScriptedUpdates yes
 # Default: clamav/version_number
 #HTTPUserAgent SomeUserAgentIdString
 
+# Use aaa.bbb.ccc.ddd as client address for downloading databases. Useful for
+# multi-homed systems.
+# Default: Use OS'es default outgoing IP address.
+#LocalIPAddress aaa.bbb.ccc.ddd
+
 # Send the RELOAD command to clamd.
 # Default: no
 NotifyClamd /etc/clamd.conf
@@ -123,6 +128,10 @@ NotifyClamd /etc/clamd.conf
 # In the command string %v will be replaced by the new version number.
 # Default: disabled
 #OnOutdatedExecute command
+
+# Don't fork into background.
+# Default: no
+#Foreground yes
 
 # Enable debug messages in libclamav.
 # Default: no
@@ -170,10 +179,25 @@ SubmitDetectionStats /etc/clamd.conf
 # the statistics of this clamd installation by logging into
 # http://www.stats.clamav.net with the same credentials you used to
 # generate the HostID. For more information refer to:
-# http://www.clamav.net/support/faq/faq-cctts/
+# http://www.clamav.net/documentation.html#cctts
 # This feature requires SubmitDetectionStats to be enabled.
 # Default: disabled
 #DetectionStatsHostID unique-id
+
+# This option enables support for Google Safe Browsing. When activated for
+# the first time, freshclam will download a new database file (safebrowsing.cvd)
+# which will be automatically loaded by clamd and clamscan during the next
+# reload, provided that the heuristic phishing detection is turned on. This
+# database includes information about websites that may be phishing sites or
+# possible sources of malware. When using this option, it's mandatory to run
+# freshclam at least every 30 minutes.
+# Freshclam uses the ClamAV's mirror infrastructure to distribute the
+# database and its updates but all the contents are provided under Google's
+# terms of use. See http://www.google.com/transparencyreport/safebrowsing
+# and http://www.clamav.net/documentation.html#safebrowsing
+# for more information.
+# Default: disabled
+#SafeBrowsing yes
 
 # This option enables downloading of bytecode.cvd, which includes additional
 # detection mechanisms and improvements to the ClamAV engine.
@@ -181,8 +205,7 @@ SubmitDetectionStats /etc/clamd.conf
 #Bytecode yes
 
 # Download an additional 3rd party signature database distributed through
-# the ClamAV mirrors. Here you can find a list of available databases:
-# http://www.clamav.net/download/cvd/3rdparty
+# the ClamAV mirrors.
 # This option can be used multiple times.
 #ExtraDatabase dbname1
 #ExtraDatabase dbname2
