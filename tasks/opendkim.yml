@@ -28,8 +28,8 @@
   # needed for Postfix to use opendkim socket
 - name: opendkim | add postfix to group milter
   user: >
-    name=milter
-    groups=postfix
+    name=postfix
+    groups=milter
     append=yes
   tags: [accounts, config]
 
