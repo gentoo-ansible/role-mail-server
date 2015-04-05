@@ -44,4 +44,4 @@
 
     Press Enter to continue"
   with_items: dkim_keys.results | map(attribute='stdout') | list
-  when: mailsrv_dkim_enabled and not item.split()[1] in lookup('dnstxt', item.split()[0])
+  when: mailsrv_dkim_enabled and ( lookup('dnstxt', item.split()[0]) is none or not item.split()[1] in lookup('dnstxt', item.split()[0]) )
