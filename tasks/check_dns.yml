@@ -22,7 +22,7 @@
   pause: >
     prompt="You should add SPF record to DNS for {{ item }}:
 
-        {{ item }}. IN TXT v=spf1 mx -all
+        {{ item }}. IN TXT v=spf1 mx ~all
 
     Press Enter to continue"
   when: "not 'v=spf1 ' in (lookup('dnstxt', item) or '')"
