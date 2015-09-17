@@ -253,7 +253,9 @@ virtual_mailbox_domains = {{ mailsrv_virtual_domains | join(' ') }}
 virtual_mailbox_maps = ldap:/etc/postfix/ldap-virtual-mailbox-maps.cf
 
 # Postfix is final destination for the specified list of virtual alias domains.
-virtual_alias_maps = ldap:/etc/postfix/ldap-virtual-alias-maps.cf
+virtual_alias_maps =
+    ldap:/etc/postfix/ldap-virtual-alias-maps.cf
+    texthash:/etc/postfix/virtual
 
 # Lookup tables with all names or addresses of local recipients.
 local_recipient_maps = $virtual_mailbox_maps

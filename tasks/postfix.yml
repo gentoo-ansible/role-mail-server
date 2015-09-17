@@ -25,6 +25,14 @@
   notify: restart postfix
   tags: config
 
+- name: postfix | generate virtual aliases map
+  copy: >
+    dest=/etc/postfix/virtual
+    content='{% for item in mailsrv_virtual_aliases %}{{ item }}\n{% endfor %}'
+    owner=root group=root mode=0644
+  notify: restart postfix
+  tags: config
+
 - name: postfix | copy enhanced runscript
   copy: >
     src=postfix/postfix.rc

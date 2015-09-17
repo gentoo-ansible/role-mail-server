@@ -25,6 +25,14 @@ mailsrv_domain: "{{ ansible_fqdn }}"
 # List of virtual mail domains.
 mailsrv_virtual_domains: []
 
+# List of additional virtual mail aliases that will be searched if no match
+# is found in LDAP.
+#
+# Example:
+#   - jimmy@example.org james@example.org
+#   - @example.org anything@example.org
+mailsrv_virtual_aliases: []
+
 # List of "trusted" remote SMTP clients (IP addresses) that have more
 # privileges than "strangers". In particular, "trusted" SMTP clients are
 # allowed to relay mail through Postfix.
