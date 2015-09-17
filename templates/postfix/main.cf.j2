@@ -219,16 +219,21 @@ unknown_virtual_mailbox_reject_code = 554
 unverified_recipient_reject_code = 554
 unverified_sender_reject_code = 554
 
+{% if mailsrv_postscreen_dnsbl_sites %}
+# List of DNS blocklist servers with optional filters and weight factors
+# (positive weights for blacklisting, negative for whitelisting).
 postscreen_dnsbl_sites =
-    sbl-xbl.spamhaus.org*2
-    cbl.abuseat.org*2
-    bl.spamcop.net*2
-    dnsbl.sorbs.net*1
-    spam.spamrats.com*2
-postscreen_dnsbl_threshold = 3
+{% for item in mailsrv_postscreen_dnsbl_sites %}
+    {{ item }}
+{% endfor %}
+
+# The inclusive lower bound for blocking a remote SMTP client, based on its
+# combined DNSBL score as defined with the postscreen_dnsbl_sites.
+postscreen_dnsbl_threshold = {{ mailsrv_postscreen_dnsbl_threshold }}
 postscreen_dnsbl_action = enforce
 postscreen_greet_action = enforce
 
+{% endif %}
 #
 # Virtual / Dovecot LDA
 #

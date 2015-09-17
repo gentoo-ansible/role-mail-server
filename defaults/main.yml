@@ -57,6 +57,19 @@ mailsrv_ldap_people_dn:
 # Port number the managesieve will listen on; 0 to disable.
 mailsrv_managesieve_port: 4190
 
+# List of DNS blocklist servers with optional filters and weight factors
+# (positive weights for blacklisting, negative for whitelisting).
+mailsrv_postscreen_dnsbl_sites:
+  - sbl-xbl.spamhaus.org*2
+  - cbl.abuseat.org*2
+  - bl.spamcop.net*2
+  - dnsbl.sorbs.net*1
+  - spam.spamrats.com*2
+
+# The inclusive lower bound for blocking a remote SMTP client, based on its
+# combined DNSBL score as defined with the {{ mailsrv_postscreen_dnsbl_sites }}
+mailsrv_postscreen_dnsbl_threshold: 3
+
 #
 # OpenDKIM
 #
