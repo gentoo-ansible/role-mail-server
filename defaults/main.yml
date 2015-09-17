@@ -16,6 +16,9 @@ mailsrv_postfix_chroot_enabled: true
 # Whether to enable Mail Submission Agent.
 mailsrv_submission_enabled: false
 
+# Whether to enable POP3 over TLS (port 995).
+mailsrv_pop3_enabled: false
+
 # Hostname of this mail system; should be a fully-qualified domain name.
 mailsrv_domain: "{{ ansible_fqdn }}"
 

@@ -38,6 +38,33 @@ service imap-login {
   #vsz_limit = $default_vsz_limit
 }
 
+service imap {
+  # Most of the memory goes to mmap()ing files. You may need to increase this
+  # limit if you have huge mailboxes.
+  #vsz_limit = $default_vsz_limit
+
+  # Max. number of IMAP processes (connections)
+  #process_limit = 1024
+}
+{% if mailsrv_pop3_enabled | bool %}
+
+service pop3-login {
+  inet_listener pop3 {
+    port = 0
+  }
+
+  inet_listener pop3s {
+    #port = 995
+    #ssl = yes
+  }
+}
+
+service pop3 {
+  # Max. number of POP3 processes (connections)
+  #process_limit = 1024
+}
+{% endif %}
+
 service lmtp {
   unix_listener {{ mailsrv_postfix_queue_dir }}/private/dovecot-lmtp {
     mode = 0666
@@ -53,15 +80,6 @@ service lmtp {
   #}
 
   user = vmail
-}
-
-service imap {
-  # Most of the memory goes to mmap()ing files. You may need to increase this
-  # limit if you have huge mailboxes.
-  #vsz_limit = $default_vsz_limit
-
-  # Max. number of IMAP processes (connections)
-  #process_limit = 1024
 }
 
 service auth {

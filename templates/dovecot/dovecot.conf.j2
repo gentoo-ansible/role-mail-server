@@ -22,7 +22,7 @@
 # --sysconfdir=/etc --localstatedir=/var
 
 # Protocols we want to be serving.
-protocols = imap lmtp sieve
+protocols = imap lmtp sieve{{ ' pop3' if mailsrv_pop3_enabled | bool else '' }}
 
 # A comma separated list of IPs or hosts where to listen in for connections.
 # "*" listens in all IPv4 interfaces, "::" listens in all IPv6 interfaces.

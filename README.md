@@ -17,6 +17,7 @@ Open these ports:
 *  TCP 25 ... SMTP for inbound e-mails.
 *  TCP 465 ... SMTP over TLS for sending e-mails (authorized relay).
 *  TCP 993 ... IMAP over TLS.
+*  TCP 995 ... POP3 over TLS (disabled by default).
 
 
 ## Migrate mails from another IMAP server
