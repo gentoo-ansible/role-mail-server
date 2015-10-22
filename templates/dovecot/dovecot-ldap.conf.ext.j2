@@ -136,7 +136,7 @@ pass_attrs = maildrop=user
 pass_filter = (&(objectClass=mailUser)(|(maildrop=%u)(uid=%u)))
 
 # Attributes and filter to get a list of all users
-iterate_attrs = mail=user
+iterate_attrs = maildrop=user
 iterate_filter = (objectClass=mailUser)
 
 # Default password scheme. "{scheme}" before password overrides this.
