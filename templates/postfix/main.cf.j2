@@ -105,7 +105,7 @@ smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 
 # List of TLS protocols that the Postfix SMTP client will use with mandatory
 # TLS encryption.
-smtp_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1
+smtp_tls_mandatory_protocols = !SSLv2,!SSLv3
 
 # List of TLS protocols that the Postfix SMTP client will exclude or include
 # with opportunistic TLS encryption.
@@ -137,7 +137,7 @@ smtpd_tls_key_file = {{ mailsrv_ssl_key_path }}
 
 # List of TLS protocols accepted by the Postfix SMTP server with mandatory
 # TLS encryption.
-smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1
+smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3
 
 # List of TLS protocols that the Postfix SMTP server will exclude or include
 # with opportunistic TLS encryption.
