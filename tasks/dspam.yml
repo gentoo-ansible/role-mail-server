@@ -60,7 +60,7 @@
 - name: dspam | copy spam-folder.sieve script for dovecot
   copy: >
     src=dspam/spam-folder.sieve
-    dest={{ mailsrv_mailboxes_dir }}/spam-folder.sieve
+    dest={{ mailsrv_dovecot_data_dir }}/spam-folder.sieve
     owner=root group=root mode=0644
   tags: config
 

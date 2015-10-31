@@ -16,14 +16,14 @@
     group=vmail
     system=yes
     shell=/sbin/nologin
-    home={{ mailsrv_mailboxes_dir }}
+    home={{ mailsrv_dovecot_data_dir }}
     createhome=no
   tags: [accounts, install]
 
 - name: dovecot | prepare mailbox directories for domains
   file: >
     state=directory
-    path={{ mailsrv_mailboxes_dir }}/{{ item }}
+    path={{ mailsrv_dovecot_data_dir }}/{{ item }}
     owner=vmail group=vmail mode=0770
   with_items: mailsrv_virtual_domains
   tags: install

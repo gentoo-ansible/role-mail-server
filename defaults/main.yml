@@ -7,8 +7,8 @@
 # directory of Postfix daemon processes that run chrooted.
 mailsrv_postfix_queue_dir: /var/spool/postfix
 
-# Directory path for Dovecot to store mailboxes.
-mailsrv_mailboxes_dir: /var/lib/dovecot
+# Location of the Dovecot data directory to store mailboxes etc.
+mailsrv_dovecot_data_dir: /var/lib/dovecot
 
 # Whether to run SMTP servers and Submission in chroot jail.
 mailsrv_postfix_chroot_enabled: true

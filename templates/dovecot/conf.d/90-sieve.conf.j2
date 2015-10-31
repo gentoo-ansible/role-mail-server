@@ -17,7 +17,7 @@ plugin {
   # command line tool.
   # --> See sieve_before fore executing scripts before the user's personal
   #     script.
-  #sieve_default = {{ mailsrv_mailboxes_dir }}/default.sieve
+  #sieve_default = {{ mailsrv_dovecot_data_dir }}/default.sieve
 
   # Directory for :personal include scripts for the include extension. This
   # is also where the ManageSieve service stores the user's scripts.
@@ -33,7 +33,7 @@ plugin {
   # file names, using a normal 8bit per-character comparison. Multiple script
   # file or directory paths can be specified by appending an increasing number.
 {% if mailsrv_dspam_enabled %}
-  sieve_before = {{ mailsrv_mailboxes_dir }}/spam-folder.sieve
+  sieve_before = {{ mailsrv_dovecot_data_dir }}/spam-folder.sieve
 {% else %}
   sieve_before =
 {% endif %}
