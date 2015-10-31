@@ -50,7 +50,7 @@ ssl_dh_parameters_length = {{ mailsrv_ssl_dh_params_length }}
 ssl_protocols = {{ mailsrv_ssl_protocols | join(' ') }}
 
 # SSL ciphers to use
-ssl_cipher_list = ALL:!EXPORT:!LOW:!MEDIUM:!aNULL:+RC4:@STRENGTH
+ssl_cipher_list = {{ mailsrv_ssl_ciphers }}
 
 # Prefer the server's order of ciphers over client's.
 ssl_prefer_server_ciphers = yes

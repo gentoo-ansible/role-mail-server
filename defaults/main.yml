@@ -59,6 +59,10 @@ mailsrv_ssl_key_path: /etc/ssl/postfix/server.key
 # List of allowed or disallowed (prefixed with "!") SSL/TLS protocols.
 mailsrv_ssl_protocols: ['!SSLv2', '!SSLv3']
 
+# Colon-separated list of allowed or disallowed (prefixed with "!") ciphers
+# to (not) use with SSL/TLS.
+mailsrv_ssl_ciphers: EDH+CAMELLIA:ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS:!RC4
+
 # Number of bites of Diffie-Hellman modulus to be generated.
 mailsrv_ssl_dh_params_length: 2048
 

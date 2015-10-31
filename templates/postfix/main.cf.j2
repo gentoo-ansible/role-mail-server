@@ -139,6 +139,14 @@ smtpd_tls_key_file = {{ mailsrv_ssl_key_path }}
 # TLS encryption.
 smtpd_tls_mandatory_protocols = {{ mailsrv_ssl_protocols | join(',') }}
 
+# The minimum TLS cipher grade that the Postfix SMTP server will use with
+# mandatory TLS encryption.
+smtpd_tls_mandatory_ciphers = high
+
+# The OpenSSL cipherlist for "high" grade ciphers. This defines the meaning of
+# the "high" setting in smtpd_tls_mandatory_ciphers etc.
+tls_high_cipherlist = {{ mailsrv_ssl_ciphers }}
+
 # List of TLS protocols that the Postfix SMTP server will exclude or include
 # with opportunistic TLS encryption.
 smtpd_tls_protocols = {{ mailsrv_ssl_protocols | join(',') }}
