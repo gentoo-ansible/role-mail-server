@@ -24,7 +24,6 @@
   file: >
     state=directory
     path={{ mailsrv_mailboxes_dir }}/{{ item }}
-    recurse=yes
     owner=vmail group=vmail mode=0770
   with_items: mailsrv_virtual_domains
   tags: install
