@@ -33,6 +33,14 @@
   notify: restart postfix
   tags: config
 
+- name: postfix | generate Diffie-Hellman parameters (this will take few minutes)
+  command: >
+    openssl dhparam -out {{ mailsrv_ssl_dh_params_path }} {{ mailsrv_ssl_dh_params_length }}
+    creates={{ mailsrv_ssl_dh_params_path }}
+  when: mailsrv_ssl_dh_params_path != ''
+  notify: restart postfix
+  tags: config
+
 - name: postfix | copy enhanced runscript
   copy: >
     src=postfix/postfix.rc

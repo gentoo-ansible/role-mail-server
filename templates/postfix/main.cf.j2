@@ -143,6 +143,9 @@ smtpd_tls_mandatory_protocols = {{ mailsrv_ssl_protocols | join(',') }}
 # with opportunistic TLS encryption.
 smtpd_tls_protocols = {{ mailsrv_ssl_protocols | join(',') }}
 
+# File with DH parameters that the Postfix SMTP server should use with EDH ciphers.
+smtpd_tls_dh1024_param_file = {{ mailsrv_ssl_dh_params_path }}
+
 # Add "Received:" message headers with info about the protocol and cipher used.
 smtpd_tls_received_header = yes
 

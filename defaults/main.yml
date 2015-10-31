@@ -59,6 +59,14 @@ mailsrv_ssl_key_path: /etc/ssl/postfix/server.key
 # List of allowed or disallowed (prefixed with "!") SSL/TLS protocols.
 mailsrv_ssl_protocols: ['!SSLv2', '!SSLv3']
 
+# Number of bites of Diffie-Hellman modulus to be generated.
+mailsrv_ssl_dh_params_length: 2048
+
+# Path of the file with Diffie-Hellman parameters for EDH ciphers, or empty
+# string to use default DH groups (not recommended!).
+# It'll be generated if not exist yet.
+mailsrv_ssl_dh_params_path: "/etc/ssl/dh{{ mailsrv_ssl_dh_params_length }}.pem"
+
 # URI(s) of LDAP server(s) where are users and aliases stored.
 mailsrv_ldap_uri: ldap://127.0.0.1:389
 

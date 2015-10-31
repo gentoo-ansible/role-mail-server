@@ -44,7 +44,7 @@ ssl_key = <{{ mailsrv_ssl_key_path }}
 #ssl_cert_username_field = commonName
 
 # DH parameters length to use.
-ssl_dh_parameters_length = 3072
+ssl_dh_parameters_length = {{ mailsrv_ssl_dh_params_length }}
 
 # SSL protocols to use
 ssl_protocols = {{ mailsrv_ssl_protocols | join(' ') }}
