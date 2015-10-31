@@ -56,6 +56,9 @@ mailsrv_ssl_cert_path: /etc/ssl/postfix/server.crt
 # Path of the SSL key for SMTP and IMAP server.
 mailsrv_ssl_key_path: /etc/ssl/postfix/server.key
 
+# List of allowed or disallowed (prefixed with "!") SSL/TLS protocols.
+mailsrv_ssl_protocols: ['!SSLv2', '!SSLv3']
+
 # URI(s) of LDAP server(s) where are users and aliases stored.
 mailsrv_ldap_uri: ldap://127.0.0.1:389
 

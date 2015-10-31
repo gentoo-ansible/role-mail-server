@@ -47,7 +47,7 @@ ssl_key = <{{ mailsrv_ssl_key_path }}
 ssl_dh_parameters_length = 3072
 
 # SSL protocols to use
-ssl_protocols = !SSLv2 !SSLv3
+ssl_protocols = {{ mailsrv_ssl_protocols | join(' ') }}
 
 # SSL ciphers to use
 ssl_cipher_list = ALL:!EXPORT:!LOW:!MEDIUM:!aNULL:+RC4:@STRENGTH
