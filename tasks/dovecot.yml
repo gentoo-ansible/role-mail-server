@@ -20,14 +20,6 @@
     createhome=no
   tags: [accounts, install]
 
-- name: dovecot | prepare mailbox directories for domains
-  file: >
-    state=directory
-    path={{ mailsrv_dovecot_data_dir }}/{{ item }}
-    owner=vmail group=vmail mode=0770
-  with_items: mailsrv_virtual_domains
-  tags: install
-
 - name: dovecot | install configs to /etc/dovecot/
   template: >
     src=dovecot/{{ item.name }}.j2
