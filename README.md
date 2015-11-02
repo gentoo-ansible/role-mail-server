@@ -61,7 +61,7 @@ doveadm \
 
 Gmail has virtual folders: “All Mail”, “Starred” and “Important”. From the migration point of view this means that the migration should skip these folders, since their mails are in other folders anyway. That’s what these `-x` options do.
 
-If the migration fails with _Error: Mailbox INBOX sync: mailbox_delete failed: INBOX can't be deleted_, then delete content of `$mailsrv_dovecot_data_dir/$domain/$username` (e.g. `/var/lib/dovecot/encom.org/flynn`) and try it again.
+If the migration fails with _Error: Mailbox INBOX sync: mailbox_delete failed: INBOX can't be deleted_, then delete content of `$mailsrv_maildir_location` (e.g. `/var/lib/dovecot/encom.org/flynn`) and try it again.
 
 
 ## Links

@@ -3,12 +3,24 @@
 # Postfix & Dovecot
 #
 
-# Location of the Postfix top-level queue directory. This is also the root
+# Path of the Postfix top-level queue directory. This is also the root
 # directory of Postfix daemon processes that run chrooted.
 mailsrv_postfix_queue_dir: /var/spool/postfix
 
-# Location of the Dovecot data directory to store mailboxes etc.
+# Path of the Dovecot data directory to store mailboxes etc.
 mailsrv_dovecot_data_dir: /var/lib/dovecot
+
+# Location for users' mailboxes. This should be subdirectory of
+# {{mailsrv_dovecot_data_dir}}.
+#
+# There are a few special variables you can use, e.g.:
+#   %u - username
+#   %n - user part in user@domain, same as %u if there's no domain
+#   %d - domain part in user@domain, empty if there's no domain
+#   %h - home directory
+#
+# See http://wiki2.dovecot.org/Variables for complete list of variables.
+mailsrv_maildir_location: "{{ mailsrv_dovecot_data_dir }}/%Ld/%Ln"
 
 # Whether to run SMTP servers and Submission in chroot jail.
 mailsrv_postfix_chroot_enabled: true

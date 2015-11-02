@@ -20,5 +20,5 @@ passdb {
 # <doc/wiki/UserDatabase.Static.txt>
 userdb {
   driver = static
-  args = uid=vmail gid=vmail home={{ mailsrv_dovecot_data_dir }}/%d/%n allow_all_users=yes
+  args = uid=vmail gid=vmail home={{ mailsrv_maildir_location }} allow_all_users=yes
 }
