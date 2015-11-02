@@ -151,6 +151,8 @@ mailsrv_dspam_db_database: dspam
 mailsrv_dspam_db_username: "{{ mailsrv_dspam_db_database }}"
 
 # Password of the DSPAM database user.
+# WARNING: It seems that too long passwords (e.g. 32 chars) doesn't work here,
+# so keep it under 25 characters!
 mailsrv_dspam_db_password: changeme
 
 # Should not be changed.
